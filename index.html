@@ -1,0 +1,563 @@
+<!DOCTYPE html>
+<html lang="no">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+<meta name="theme-color" content="#173b63">
+<title>Barnehage og skoleassistent Quiz</title>
+
+<style>
+:root {
+  --navy:#173b63;
+  --blue:#2d6cdf;
+  --red:#e84b4b;
+  --white:#fff;
+  --ink:#172338;
+  --muted:#65748b;
+  --pale:#f2f7ff;
+  --line:#dbe5f2;
+  --green:#18845b;
+  --gold:#ffca55;
+}
+*{box-sizing:border-box}
+body{
+  margin:0;
+  background:linear-gradient(145deg,#eaf3ff,#fff8f4 55%,#eefaf5);
+  color:var(--ink);
+  font-family:system-ui,-apple-system,"Avenir Next",sans-serif;
+  min-height:100vh;
+}
+button,select{font:inherit}
+button{cursor:pointer}
+button:focus-visible,select:focus-visible{
+  outline:3px solid #ffca55;
+  outline-offset:3px;
+}
+.wrap{max-width:920px;margin:auto;padding:18px 14px 36px}
+header{
+  background:var(--navy);color:white;border-radius:26px;
+  padding:24px 22px;position:relative;overflow:hidden;
+  box-shadow:0 12px 28px #173b6320;
+}
+header:after{
+  content:"🇳🇴";position:absolute;right:16px;top:9px;
+  font-size:65px;opacity:.18;transform:rotate(10deg);
+  pointer-events:none;
+}
+.kicker{
+  font-size:.78rem;text-transform:uppercase;
+  letter-spacing:.14em;color:#c9ddff;font-weight:800
+}
+h1{font-size:clamp(1.65rem,5vw,2.5rem);line-height:1.1;margin:9px 0 10px;max-width:650px}
+header p{margin:0;max-width:650px;color:#e5efff;line-height:1.5}
+.pills{display:flex;gap:8px;flex-wrap:wrap;margin-top:16px}
+.pill{background:#ffffff20;border:1px solid #ffffff35;padding:6px 10px;border-radius:999px;font-size:.82rem}
+.panel{background:white;border:1px solid var(--line);border-radius:22px;padding:18px;margin-top:16px;box-shadow:0 6px 20px #1d3b5b0a}
+h2{font-size:1.2rem;margin:0 0 12px}
+.setup-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
+.field label{display:block;font-weight:800;font-size:.88rem;margin-bottom:6px}
+select{width:100%;border:1px solid #cbd8e8;background:white;border-radius:12px;padding:12px;color:var(--ink)}
+.btn{border:0;border-radius:14px;padding:13px 16px;font-weight:850;transition:transform .12s}
+.btn:active{transform:scale(.98)}
+.primary{background:var(--blue);color:white}
+.secondary{background:#eaf1ff;color:var(--navy)}
+.dark{background:var(--navy);color:white}
+.startrow{display:flex;gap:10px;flex-wrap:wrap;margin-top:15px}
+.note{font-size:.86rem;color:var(--muted);line-height:1.5;margin:12px 0 0}
+.hidden{display:none!important}
+.stats{display:grid;grid-template-columns:repeat(3,1fr);gap:9px;margin-bottom:14px}
+.stat{background:var(--pale);border:1px solid var(--line);border-radius:15px;padding:11px;text-align:center}
+.stat strong{display:block;font-size:1.3rem;color:var(--navy)}
+.stat span{font-size:.76rem;color:var(--muted)}
+.progress{height:9px;background:#e6edf7;border-radius:20px;overflow:hidden;margin-bottom:16px}
+.progress div{height:100%;background:linear-gradient(90deg,var(--blue),#51b5e8);width:0%;transition:width .25s}
+.qmeta{display:flex;justify-content:space-between;gap:8px;flex-wrap:wrap;align-items:center;margin-bottom:12px}
+.tag{font-size:.76rem;font-weight:850;background:#eaf1ff;color:#234e8e;padding:6px 10px;border-radius:999px}
+.question{font-size:clamp(1.2rem,3.7vw,1.7rem);line-height:1.35;margin:8px 0 6px}
+.translation{color:var(--muted);line-height:1.5;margin:0 0 18px}
+.answers{display:grid;gap:10px}
+.answer{
+  width:100%;text-align:left;background:white;border:2px solid var(--line);
+  border-radius:15px;padding:13px 14px;display:flex;gap:11px;
+  align-items:flex-start;color:var(--ink);line-height:1.4;
+}
+.letter{flex:0 0 29px;height:29px;border-radius:9px;background:#edf3fb;color:var(--navy);font-weight:900;display:grid;place-items:center}
+.answer:hover:not(:disabled){border-color:#8fb4ff;background:#f8fbff}
+.answer.correct{border-color:#28a875;background:#eafaf2}
+.answer.correct .letter{background:var(--green);color:white}
+.answer.wrong{border-color:#e85b5b;background:#fff0f0}
+.answer:disabled{cursor:default}
+.feedback{margin-top:14px;border-radius:15px;padding:14px;line-height:1.6}
+.feedback.good{background:#eafaf2;border:1px solid #b6e8cf}
+.feedback.bad{background:#fff3ed;border:1px solid #ffd0bd}
+.feedback strong{display:block;margin-bottom:4px}
+.controls{display:flex;gap:10px;justify-content:space-between;align-items:center;margin-top:15px;flex-wrap:wrap}
+.controls .btn{flex:1;min-width:135px}
+.end{text-align:center;padding:25px 12px}
+.bigscore{font-size:3.2rem;font-weight:950;color:var(--blue);line-height:1;margin:14px 0}
+.category-list{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px}
+.cat{border:1px solid var(--line);border-radius:13px;padding:10px;font-size:.82rem;background:#fbfdff}
+.cat b{display:block;margin-bottom:4px;color:var(--navy)}
+footer{text-align:center;color:var(--muted);font-size:.8rem;padding:18px 0}
+@media(max-width:560px){
+  .wrap{padding:10px}
+  .setup-grid{grid-template-columns:1fr}
+  .category-list{grid-template-columns:repeat(2,minmax(0,1fr))}
+  header{padding:20px 17px}
+  .panel{padding:15px}
+  .stats{gap:6px}
+  .stat{padding:9px 5px}
+}
+</style>
+</head>
+
+<body>
+<div class="wrap">
+
+<header>
+  <div class="kicker">Lær · spill · bli tryggere 🇳🇴</div>
+  <h1>Barnehage og skoleassistent Quiz</h1>
+  <p>Test det du har lært i uke 37–42. Learn Norwegian while you play, with explanations in Norwegian and English.</p>
+  <div class="pills">
+    <span class="pill">📚 9 kategorier</span>
+    <span class="pill">🎯 Fire spillmoduser</span>
+    <span class="pill">🇳🇴 Norsk + English</span>
+    <span class="pill">✨ Ingen tidspress</span>
+  </div>
+</header>
+
+<section id="setup" class="panel">
+  <h2>🎮 Gjør deg klar / Set up your game</h2>
+  <div class="setup-grid">
+    <div class="field">
+      <label for="mode">Spillmodus / Game mode</label>
+      <select id="mode">
+        <option value="classic">Classic quiz — flervalg</option>
+        <option value="scenario">Hva ville du gjort? — scenarios</option>
+        <option value="truefalse">Sant eller usant / True or false</option>
+        <option value="exam">Eksamenstrening / Exam practice</option>
+      </select>
+    </div>
+    <div class="field">
+      <label for="category">Kategori / Category</label>
+      <select id="category">
+        <option value="all">Alle kategorier / All categories</option>
+      </select>
+    </div>
+    <div class="field">
+      <label for="count">Antall spørsmål / Number of questions</label>
+      <select id="count">
+        <option value="10">10 spørsmål</option>
+        <option value="20">20 spørsmål</option>
+        <option value="30">30 spørsmål</option>
+        <option value="50" selected>50 spørsmål / All questions</option>
+      </select>
+    </div>
+    <div class="field">
+      <label for="language">Spørsmålsspråk / Question language</label>
+      <select id="language">
+        <option value="both">Norsk + English</option>
+        <option value="no">Norsk først / Norwegian first</option>
+        <option value="en">English first</option>
+      </select>
+    </div>
+  </div>
+  <div class="startrow">
+    <button class="btn primary" id="start">Start quiz 🚀</button>
+    <button class="btn secondary" id="study">Se kategoriene / Browse topics</button>
+  </div>
+  <p class="note">Svarene blandes hver gang. Du får poeng og en forklaring etter hvert svar. Ingen timer — ta den tiden du trenger. Ved en medisinsk nødsituasjon i Norge, ring 113.</p>
+</section>
+
+<section id="categories" class="panel hidden">
+  <h2>🧠 Kategoriene / Categories</h2>
+  <div id="catlist" class="category-list"></div>
+  <div class="startrow">
+    <button class="btn secondary" id="back">Tilbake / Back</button>
+  </div>
+</section>
+
+<section id="game" class="panel hidden">
+  <div class="stats">
+    <div class="stat"><strong id="score">0</strong><span>Poeng / Points</span></div>
+    <div class="stat"><strong id="position">1/50</strong><span>Spørsmål / Question</span></div>
+    <div class="stat"><strong id="streak">0 🔥</strong><span>På rad / Streak</span></div>
+  </div>
+  <div class="progress"><div id="bar"></div></div>
+  <div class="qmeta">
+    <span class="tag" id="catTag">Kategori</span>
+    <span class="tag" id="modeTag">Classic</span>
+  </div>
+  <h2 class="question" id="question"></h2>
+  <p class="translation" id="translation"></p>
+  <div id="answers" class="answers"></div>
+  <div id="feedback" class="feedback hidden" aria-live="polite"></div>
+  <div class="controls">
+    <button class="btn secondary" id="quit">Avslutt / Quit</button>
+    <button class="btn primary" id="next" disabled>Neste spørsmål / Next →</button>
+  </div>
+</section>
+
+<section id="result" class="panel hidden">
+  <div class="end">
+    <div style="font-size:3rem">🏆</div>
+    <h2 id="resultTitle">Bra jobbet!</h2>
+    <p id="resultText">You finished the quiz.</p>
+    <div class="bigscore" id="finalScore">0%</div>
+    <p id="finalDetail"></p>
+    <p id="finalMessage"></p>
+    <div class="startrow" style="justify-content:center">
+      <button class="btn primary" id="again">Spill igjen / Play again 🔁</button>
+      <button class="btn secondary" id="home">Til start / Home</button>
+    </div>
+  </div>
+</section>
+
+<footer>Barnehage og skoleassistent Quiz · Læring med trygghet 💙🤍❤️</footer>
+</div>
+
+<script>
+"use strict";
+
+const categories = [
+  ["Yrket og arbeidsplassen","The profession and workplace","Uke 37"],
+  ["Kommunikasjon og relasjoner","Communication and relationships","Uke 38"],
+  ["Barns utvikling og inkludering","Child development and inclusion","Uke 39"],
+  ["Den norske skolen og SFO","Norwegian school and SFO","Uke 40"],
+  ["Hygiene og sikkerhet","Hygiene and safety","Uke 40"],
+  ["Førstehjelp og nødsituasjoner","First aid and emergencies","Uke 40 og 42"],
+  ["Konflikter og foreldresamarbeid","Conflict management and parents","Uke 40 og 42"],
+  ["Skolebytte, fordommer og likeverd","School swap, prejudice and equality","Refleksjon"],
+  ["Praksis og læringsmål","Work placement and learning goals","Uke 42"]
+];
+
+/* Question format:
+   category, Norwegian question, English question,
+   answers, correct answer index, Norwegian explanation,
+   English explanation, question type
+*/
+const raw = [
+["Yrket og arbeidsplassen","Hva er en viktig oppgave for en assistent?","What is an important task for an assistant?",["Å støtte barn og elever","Å bestemme alt alene","Å ignorere elevenes behov","Å erstatte alle lærerne"],0,"En assistent støtter barn og elever og samarbeider med personalet.","An assistant supports children and students and works with the staff."],
+["Yrket og arbeidsplassen","Hva betyr det å være pålitelig?","What does it mean to be reliable?",["Å komme når man selv har lyst","Å holde avtaler og følge oppgaver","Å love ting man ikke kan gjøre","Å la andre gjøre alt"],1,"En pålitelig person møter opp, holder avtaler og følger rutiner.","A reliable person shows up, keeps agreements and follows routines."],
+["Yrket og arbeidsplassen","Hva betyr taushetsplikt?","What does confidentiality mean?",["At vi aldri snakker med kollegaer","At vi beskytter private opplysninger","At vi skjuler alle feil","At barn ikke får stille spørsmål"],1,"Taushetsplikt beskytter private opplysninger om barn og familier.","Confidentiality protects private information about children and families."],
+["Yrket og arbeidsplassen","Hva gjør en god rollemodell?","What does a good role model do?",["Viser respekt og god oppførsel","Bryter reglene foran barna","Ler av andre","Unngår å ta ansvar"],0,"Barn lærer også av det voksne gjør, ikke bare av det de sier.","Children learn from what adults do, not only what they say."],
+["Yrket og arbeidsplassen","Hva bør du gjøre hvis du ikke forstår en beskjed?","What should you do if you do not understand an instruction?",["Gjette og håpe på det beste","Spørre på en høflig måte","Ignorere beskjeden","Gå hjem"],1,"Det er profesjonelt å spørre når du er usikker.","It is professional to ask when you are unsure."],
+["Yrket og arbeidsplassen","Hva er viktig i samarbeid med kollegaer?","What is important when working with colleagues?",["Å konkurrere om alt","Å dele relevant informasjon og hjelpe hverandre","Å holde tilbake viktige beskjeder","Å kritisere foran barna"],1,"Godt samarbeid gjør arbeidsdagen tryggere og mer oversiktlig.","Good teamwork makes the working day safer and more organised."],
+["Yrket og arbeidsplassen","Hva bør du gjøre hvis du kommer for sent?","What should you do if you are running late?",["Ikke si fra","Gi beskjed så tidlig som mulig","Skylde på et barn","Late som ingenting"],1,"Gi beskjed og følg arbeidsplassens rutiner.","Let the workplace know as early as possible and follow its routines."],
+["Kommunikasjon og relasjoner","Hva er verbal kommunikasjon?","What is verbal communication?",["Kommunikasjon med ord","Bare ansiktsuttrykk","Bare bevegelser","Stillhet hele dagen"],0,"Verbal kommunikasjon bruker ord, både muntlig og skriftlig.","Verbal communication uses words, spoken or written."],
+["Kommunikasjon og relasjoner","Hva er nonverbal kommunikasjon?","What is non-verbal communication?",["Å lese en bok høyt","Kommunikasjon uten ord, for eksempel kroppsspråk","Å skrive en e-post","Å stille et spørsmål med ord"],1,"Ansiktsuttrykk, blikk og kroppsholdning kan formidle budskap uten ord.","Facial expressions, eye contact and posture can communicate without words."],
+["Kommunikasjon og relasjoner","Hva bygger en god relasjon på?","What is a good relationship built on?",["Frykt og straff","Tillit og respekt","Hemmeligheter og press","At én person bestemmer alt"],1,"Tillit og respekt hjelper barn å føle seg trygge.","Trust and respect help children feel safe."],
+["Kommunikasjon og relasjoner","Et barn forteller noe viktig. Hva gjør du?","A child tells you something important. What do you do?",["Avbryter og ser på mobilen","Lytter rolig og viser interesse","Ler av barnet","Forteller det til alle"],1,"Aktiv lytting viser barnet at det blir tatt på alvor.","Active listening shows the child that they are being taken seriously."],
+["Kommunikasjon og relasjoner","Hvorfor er lek viktig?","Why is play important?",["Den utvikler språk, fantasi og sosiale ferdigheter","Den er bare tidsfordriv","Den hindrer all læring","Den er bare for voksne"],0,"Lek støtter flere sider av barns utvikling.","Play supports several areas of children's development."],
+["Kommunikasjon og relasjoner","Hvordan snakker du best med et barn som er lei seg?","How is it best to speak to an upset child?",["Rolig, tydelig og med omsorg","Høyt og sint","Med latter","Ved å ignorere barnet"],0,"Rolig kommunikasjon og omsorg kan hjelpe barnet med å finne ro.","Calm, caring communication can help a child feel settled."],
+["Kommunikasjon og relasjoner","Hva kan kroppsspråk vise?","What can body language show?",["Bare høyde","Følelser og holdninger","Bare alder","Ingenting"],1,"Kroppsspråk kan gi tegn på hvordan noen føler seg, men vi bør ikke gjette sikkert.","Body language can offer clues about feelings, but we should not assume we know for sure."],
+["Barns utvikling og inkludering","Utvikler alle barn seg i samme tempo?","Do all children develop at the same pace?",["Ja, alltid","Nei, barn utvikler seg forskjellig","Bare i barnehagen","Bare etter skolestart"],1,"Barn utvikler seg i ulikt tempo og kan trenge ulik støtte.","Children develop at different speeds and may need different support."],
+["Barns utvikling og inkludering","Hva betyr fysisk utvikling?","What does physical development mean?",["Utvikling av kropp og bevegelse","Å lære nye ord","Å få venner","Å forstå regler"],0,"Fysisk utvikling handler blant annet om kroppen, motorikk og bevegelse.","Physical development includes the body, motor skills and movement."],
+["Barns utvikling og inkludering","Hva betyr inkludering?","What does inclusion mean?",["At bare de flinkeste får delta","At alle får mulighet til å delta og høre til","At alle må være like","At barn alltid leker alene"],1,"Inkludering handler om deltakelse, tilhørighet og like muligheter.","Inclusion means participation, belonging and equal opportunities."],
+["Barns utvikling og inkludering","Hva betyr tilrettelegging?","What does adaptation mean?",["Å tilpasse miljø eller aktiviteter etter behov","Å gi alle nøyaktig samme oppgave uansett behov","Å fjerne alle aktiviteter","Å bestemme hvem som får være med"],0,"Tilrettelegging kan gjøre det lettere for flere barn å delta.","Adaptation can make it easier for more children to participate."],
+["Barns utvikling og inkludering","Hva betyr «trygg base» i Trygghetssirkelen?","What does “secure base” mean in the Circle of Security?",["Et sted barnet aldri får gå fra","Trygghet som gir barnet mot til å utforske","En regel om å sitte stille","Et rom uten voksne"],1,"En trygg voksen gir barnet støtte til å utforske verden.","A trusted adult gives the child support and confidence to explore."],
+["Barns utvikling og inkludering","Hva betyr «trygg havn»?","What does “safe haven” mean?",["Et sted å gjemme seg for alltid","Trøst og støtte når barnet trenger det","En premie etter lek","En skoleoppgave"],1,"Barnet kan søke trøst hos en trygg voksen når noe er vanskelig.","A child can seek comfort from a trusted adult when things are difficult."],
+["Barns utvikling og inkludering","Hva står HMS for?","What does HMS stand for in Norway?",["Helse, miljø og sikkerhet","Hjelp med skole","Hus, mat og søvn","Hygiene med såpe"],0,"HMS står for helse, miljø og sikkerhet.","HMS means health, environment and safety."],
+["Barns utvikling og inkludering","Hva betyr medvirkning?","What does participation mean?",["At barn får si sin mening og påvirke hverdagen","At barn bestemmer alt alene","At voksne aldri setter grenser","At barn ikke får velge"],0,"Barn skal få uttrykke meninger og bli hørt på en måte som passer alder og modenhet.","Children should be heard in ways appropriate to their age and maturity."],
+["Den norske skolen og SFO","Hva er SFO?","What is SFO?",["Et tilbud før og etter skoletid for skolebarn","En type sykehus","En videregående skole","Et politikontor"],0,"SFO er skolefritidsordning, ofte før og etter skoletid.","SFO is an after-school programme, often available before and after school."],
+["Den norske skolen og SFO","Hva kommer vanligvis etter barneskolen?","What usually comes after primary school in Norway?",["Barnehage","Ungdomsskole","Universitet","SFO"],1,"Ungdomsskolen kommer etter barneskolen.","Lower secondary school follows primary school."],
+["Den norske skolen og SFO","Hva gjør en skoleassistent?","What does a school assistant do?",["Støtter elever og samarbeider med lærere","Setter alle karakterer alene","Er alltid rektor","Bestemmer læreplanen alene"],0,"Skoleassistenter støtter elevenes hverdag og følger skolens rutiner.","School assistants support students and follow the school's routines."],
+["Den norske skolen og SFO","Hva er et viktig mål i barnehagen?","What is an important goal in kindergarten?",["Omsorg, lek og utvikling","Bare prøver og karakterer","Bare stillesitting","Konkurranse mellom alle barn"],0,"Barnehagen skal blant annet ivareta omsorg, lek, læring og utvikling.","Kindergarten supports care, play, learning and development."],
+["Den norske skolen og SFO","Hva er grunnskolen i Norge vanligvis delt inn i?","How is compulsory school in Norway usually divided?",["Barneskole og ungdomsskole","Barnehage og universitet","SFO og høyskole","Bare videregående"],0,"Grunnskolen består av barnetrinnet og ungdomstrinnet.","Compulsory school consists of primary and lower secondary levels."],
+["Hygiene og sikkerhet","Når er det viktig å vaske hendene?","When is handwashing important?",["Før måltider og etter toalettbesøk","Bare når hendene ser skitne ut","Aldri på skolen","Bare på fredager"],0,"Håndvask med såpe og vann bidrar til å forebygge smitte.","Handwashing with soap and water helps prevent infection."],
+["Hygiene og sikkerhet","Hva gjør du hvis du oppdager en fare på arbeidsplassen?","What do you do if you notice a hazard at work?",["Ignorerer den","Følger rutinene og varsler ansvarlig person","Venter til noen skader seg","Ber barna ordne det"],1,"Meld fra om farer og følg HMS-rutinene.","Report hazards and follow health and safety procedures."],
+["Hygiene og sikkerhet","Hvorfor er voksne gode rollemodeller for hygiene?","Why should adults model good hygiene?",["Barn lærer gjennom å se og gjøre","Barn legger aldri merke til voksne","Det er bare for syns skyld","Det erstatter alle rutiner"],0,"Voksne viser gode vaner gjennom egen praksis.","Adults demonstrate good habits through their own behaviour."],
+["Hygiene og sikkerhet","Hva kan bidra til å forebygge smitte?","What can help prevent infection?",["God håndhygiene og å følge rutinene","Å dele skitne lommetørklær","Å ignorere hygienerutiner","Å aldri lufte rom"],0,"Håndhygiene og arbeidsplassens rutiner reduserer smitterisiko.","Hand hygiene and workplace routines reduce the risk of infection."],
+["Hygiene og sikkerhet","Et barn faller og slår seg. Hva gjør du først?","A child falls and gets hurt. What do you do first?",["Sjekker at området er trygt og vurderer situasjonen","Flytter barnet uten å tenke","Går fra barnet","Ber de andre barna ta over"],0,"Sørg først for sikkerhet, vurder skaden og hent hjelp etter behov.","First ensure safety, assess the situation and get help as needed."],
+["Førstehjelp og nødsituasjoner","Hvilket nummer ringer du ved en medisinsk nødsituasjon?","Which number do you call for a medical emergency?",["110 – Brann","112 – Politi","113 – Medisinsk nødhjelp","911 – Alltid i Norge"],2,"113 er nummeret til medisinsk nødhjelp i Norge.","113 is the number for medical emergencies in Norway."],
+["Førstehjelp og nødsituasjoner","Hva er det første du bør sjekke ved en ulykke?","What should you check first at an accident?",["Om stedet er trygt","Om noen filmer","Hvor mye klokken er","Om du kjenner personen"],0,"Ikke utsett deg selv eller andre for fare.","Do not put yourself or others in danger."],
+["Førstehjelp og nødsituasjoner","Hva gjør du hvis en person er bevisstløs og ikke puster normalt?","What do you do if a person is unconscious and not breathing normally?",["Ringer 113, følger instruksjonene og starter HLR som anbefalt","Gir personen mat","Lar personen være alene","Venter i 30 minutter"],0,"Ring 113 på høyttaler og følg veiledningen. Start HLR etter instruksjonene.","Call 113 on speakerphone and follow the guidance. Start CPR as instructed."],
+["Førstehjelp og nødsituasjoner","Hva betyr HLR?","What does HLR (CPR) mean?",["Hjerte- og lungeredning","Helse og læring","Hjelp, lek og ro","Håndvask, luft og rutiner"],0,"HLR er hjerte- og lungeredning.","CPR means cardiopulmonary resuscitation."],
+["Førstehjelp og nødsituasjoner","Hva er en hjertestarter (AED) til for?","What is an AED used for?",["Å analysere hjerterytmen og gi støt når det trengs","Å måle høyde","Å gi medisiner mot feber","Å erstatte nødsamtalen"],0,"Følg stemmeinstruksjonene på hjertestarteren og instruksjonene fra 113.","Follow the AED's voice prompts and the instructions from emergency services."],
+["Førstehjelp og nødsituasjoner","Hva bør du gjøre når du ringer 113?","What should you do when calling 113?",["Forklare hvor du er og hva som har skjedd, og følge instruksjonene","Legge på med en gang","Gjette på informasjon","Bare si navnet ditt"],0,"Svar rolig på spørsmålene og følg operatørens instruksjoner.","Answer calmly and follow the dispatcher's instructions."],
+["Konflikter og foreldresamarbeid","To barn krangler. Hva er en god start?","Two children are arguing. What is a good first step?",["Beholde roen og finne ut hva som har skjedd","Bestemme hvem som er skyldig med en gang","Rope høyest mulig","Ignorere dem uansett"],0,"Behold roen, lytt til begge og hjelp dem med å finne en trygg løsning.","Stay calm, listen to both children and help them find a safe solution.","scenario"],
+["Konflikter og foreldresamarbeid","En forelder er bekymret og sint. Hva gjør du?","A parent is worried and angry. What do you do?",["Lytter respektfullt og svarer rolig","Blir sint tilbake","Diskuterer foran alle barna","Deler informasjon om andre barn"],0,"Møt forelderen profesjonelt. Spør lærer eller leder hvis du trenger hjelp.","Respond professionally and ask a teacher or manager for support if needed.","scenario"],
+["Konflikter og foreldresamarbeid","Hva betyr å sette grenser på en god måte?","What does setting boundaries well mean?",["Å være tydelig og respektfull","Å skremme barnet","Å ydmyke barnet foran andre","Å aldri forklare noe"],0,"En varm voksen kan vise omsorg og samtidig si tydelig hva som ikke er greit.","A caring adult can show warmth while clearly explaining what is not okay."],
+["Konflikter og foreldresamarbeid","En forelder spør om et annet barn. Hva gjør du?","A parent asks about another child. What do you do?",["Beskytter barnets personvern og deler ikke private opplysninger","Forteller alt du vet","Sender et bilde","Diskuterer barnet i garderoben"],0,"Private opplysninger om andre barn skal ikke deles med uvedkommende.","Private information about another child must not be shared with unauthorised people.","scenario"],
+["Konflikter og foreldresamarbeid","Hva bør du gjøre hvis en situasjon er utenfor ansvaret ditt?","What should you do if a situation is beyond your responsibility?",["Be om hjelp fra lærer eller leder","Late som du vet alt","Love foreldrene hva som helst","Skjule situasjonen"],0,"Be om veiledning og følg arbeidsplassens rutiner.","Ask for guidance and follow workplace procedures.","scenario"],
+["Skolebytte, fordommer og likeverd","Hva betyr fordommer?","What does prejudice mean?",["Å dømme noen før vi kjenner dem","Å bli kjent med noen","Å lytte nøye","Å samarbeide"],0,"Fordommer er vurderinger før vi kjenner personen eller saken godt.","Prejudice means forming an opinion before knowing the person or situation well."],
+["Skolebytte, fordommer og likeverd","Hva er en stereotypi?","What is a stereotype?",["En generalisert forestilling om en gruppe","En individuell samtale","En førstehjelpsmetode","En skoleplan"],0,"Stereotypier forenkler og generaliserer hvordan vi tror en gruppe er.","Stereotypes are simplified, generalised ideas about a group."],
+["Skolebytte, fordommer og likeverd","Hva betyr likeverd?","What does equal worth mean?",["Alle mennesker har samme verdi","Alle må være like","Noen fortjener mindre respekt","Alle må mene det samme"],0,"Likeverd betyr at alle mennesker har samme verdi, selv om vi er forskjellige.","Equal worth means everyone has the same value, even when we are different."],
+["Skolebytte, fordommer og likeverd","Du ser at et barn blir holdt utenfor leken. Hva gjør du?","You see a child being excluded from play. What do you do?",["Støtter barnet og hjelper gruppen med å inkludere det","Later som du ikke ser det","Sier at barnet må klare seg selv","Ler med de andre"],0,"Voksne skal forebygge utestenging og støtte et inkluderende fellesskap.","Adults should prevent exclusion and support an inclusive community.","scenario"],
+["Skolebytte, fordommer og likeverd","Betyr uenighet alltid at noen må vinne?","Does disagreement always mean someone has to win?",["Ja, alltid","Nei, vi kan lytte og finne løsninger sammen","Bare voksne kan være uenige","Ja, den høyeste stemmen vinner"],1,"Uenighet kan håndteres med respekt, lytting og samarbeid.","Disagreement can be handled through respect, listening and cooperation."],
+["Skolebytte, fordommer og likeverd","Hva kan vi lære av å møte mennesker med andre erfaringer?","What can we learn from meeting people with different experiences?",["Å forstå flere perspektiver og utfordre egne fordommer","At alle må leve likt","At vi bør unngå forskjeller","At førsteinntrykk alltid er riktig"],0,"Å være nysgjerrig og respektfull kan styrke forståelse og fellesskap.","Curiosity and respect can strengthen understanding and belonging."],
+["Praksis og læringsmål","Hva er et godt mål for praksis?","What is a good work-placement goal?",["Jeg vil bli kjent med rutinene på arbeidsplassen","Jeg skal aldri stille spørsmål","Jeg vil gjøre alt alene fra første dag","Jeg skal unngå samarbeid"],0,"Et konkret mål gjør det lettere å øve og se egen utvikling.","A clear goal makes it easier to practise and notice your progress."],
+["Praksis og læringsmål","Du er usikker på en rutine i praksis. Hva gjør du?","You are unsure about a routine during placement. What do you do?",["Spør veilederen eller en ansvarlig kollega","Gjetter","Ignorerer rutinen","Ber et barn bestemme"],0,"Det er ansvarlig å spørre før du gjør noe du er usikker på.","It is responsible to ask before doing something you are unsure about.","scenario"],
+["Praksis og læringsmål","Hvorfor er det nyttig å reflektere etter en arbeidsdag?","Why is it useful to reflect after a working day?",["For å forstå hva jeg lærte og hva jeg vil øve mer på","For å finne noen å skylde på","For å unngå å lære nytt","Fordi det erstatter samarbeid"],0,"Refleksjon hjelper deg å se framgang og velge neste læringsmål.","Reflection helps you notice progress and choose your next learning goal."],
+["Praksis og læringsmål","Hva kan du gjøre for å bli tryggere på norsk i praksis?","What can you do to become more confident in Norwegian during placement?",["Øve på å snakke, stille spørsmål og lære nye ord","Unngå alle samtaler","Bare bruke engelsk","Ikke prøve nye uttrykk"],0,"Små samtaler og spørsmål gir verdifull språkøving.","Small conversations and questions give you valuable language practice."],
+["Praksis og læringsmål","Hva er lurt å gjøre første dag på en ny arbeidsplass?","What is a good thing to do on the first day at a new workplace?",["Hilse, lytte, spørre om rutiner og finne ut hvem som er veileder","Endre alle rutinene","Gå rett inn og bestemme alt","Holde seg unna alle"],0,"En god start handler om å bli kjent med folk, rutiner og ansvar.","A good start means getting to know people, routines and responsibilities."]
+];
+
+const questions = raw.map((r,id)=>({
+  id,cat:r[0],no:r[1],en:r[2],answers:r[3],
+  correct:r[4],expNo:r[5],expEn:r[6],type:r[7]||"classic"
+}));
+
+const $ = id => document.getElementById(id);
+let deck=[],index=0,score=0,streak=0,bestStreak=0;
+let answered=false,currentOptions=[],gameMode="classic",lang="both";
+let correctCount=0;
+
+function shuffle(array){
+  const a=[...array];
+  for(let i=a.length-1;i>0;i--){
+    const j=Math.floor(Math.random()*(i+1));
+    [a[i],a[j]]=[a[j],a[i]];
+  }
+  return a;
+}
+
+function escapeHtml(value){
+  return String(value).replace(/[&<>"']/g,c=>({
+    "&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"
+  })[c]);
+}
+
+function show(id){
+  ["setup","categories","game","result"].forEach(name=>{
+    $(name).classList.toggle("hidden",name!==id);
+  });
+}
+
+categories.forEach(c=>{
+  const option=document.createElement("option");
+  option.value=c[0];
+  option.textContent=c[0]+" / "+c[1];
+  $("category").appendChild(option);
+});
+
+$("catlist").innerHTML=categories.map(c=>
+  `<div class="cat"><b>${escapeHtml(c[0])}</b>${escapeHtml(c[1])}<br><span style="color:#65748b">${escapeHtml(c[2])}</span></div>`
+).join("");
+
+$("study").onclick=()=>show("categories");
+$("back").onclick=()=>show("setup");
+$("start").onclick=startGame;
+$("next").onclick=nextQuestion;
+$("again").onclick=startGame;
+$("home").onclick=()=>show("setup");
+
+$("quit").onclick=()=>{
+  if(confirm("Vil du avslutte quizen? / Do you want to quit?")){
+    finishGame(true);
+  }
+};
+
+function startGame(){
+  gameMode=$("mode").value;
+  lang=$("language").value;
+
+  const wanted=Number($("count").value);
+  const category=$("category").value;
+
+  let pool=questions.filter(q=>category==="all"||q.cat===category);
+
+  if(gameMode==="scenario"){
+    const scenarios=pool.filter(q=>q.type==="scenario");
+    const others=pool.filter(q=>q.type!=="scenario");
+    pool=scenarios.length>=Math.min(wanted,pool.length)?scenarios:shuffle([...scenarios,...others]);
+  }
+
+  deck=shuffle(pool).slice(0,Math.min(wanted,pool.length));
+  index=0;
+  score=0;
+  streak=0;
+  bestStreak=0;
+  correctCount=0;
+
+  $("modeTag").textContent={
+    classic:"Classic quiz",
+    scenario:"Hva ville du gjort?",
+    truefalse:"Sant eller usant",
+    exam:"Eksamenstrening"
+  }[gameMode];
+
+  show("game");
+  renderQuestion();
+}
+
+function primaryText(q){
+  return lang==="en"?q.en:q.no;
+}
+
+function secondaryText(q){
+  if(lang==="both")return q.en;
+  return lang==="en"?q.no:"";
+}
+
+function makeTrueFalse(q){
+  const isTrue=Math.random()<0.5;
+  let statement;
+
+  if(isTrue){
+    statement={text:primaryText(q),correct:true,expNo:q.expNo,expEn:q.expEn};
+  }else{
+    const alternatives=questions.filter(x=>x.id!==q.id);
+    const other=alternatives[Math.floor(Math.random()*alternatives.length)];
+    statement={
+      text:lang==="en"?other.en:other.no,
+      correct:false,
+      expNo:other.expNo,
+      expEn:other.expEn
+    };
+  }
+
+  return {
+    prompt:lang==="en"?"Is this statement true or false?":"Er dette sant eller usant?",
+    statement,
+    options:shuffle([
+      {text:lang==="en"?"True":"Sant",correct:statement.correct,expNo:statement.expNo,expEn:statement.expEn},
+      {text:lang==="en"?"False":"Usant",correct:!statement.correct,expNo:statement.expNo,expEn:statement.expEn}
+    ])
+  };
+}
+
+function renderQuestion(){
+  if(index>=deck.length){
+    finishGame(false);
+    return;
+  }
+
+  answered=false;
+  const q=deck[index];
+
+  $("score").textContent=score;
+  $("position").textContent=(index+1)+"/"+deck.length;
+  $("streak").textContent=streak+" 🔥";
+  $("bar").style.width=(index/deck.length*100)+"%";
+  $("catTag").textContent=q.cat;
+  $("question").textContent=primaryText(q);
+  $("translation").textContent=secondaryText(q);
+  $("feedback").className="feedback hidden";
+  $("feedback").textContent="";
+  $("next").disabled=true;
+  $("next").textContent=index===deck.length-1?"Se resultat / Results →":"Neste spørsmål / Next →";
+
+  let options=[];
+
+  if(gameMode==="truefalse"){
+    const tf=makeTrueFalse(q);
+    $("question").textContent=tf.prompt;
+    $("translation").textContent=tf.statement.text;
+    options=tf.options;
+  }else{
+    options=shuffle(q.answers.map((text,i)=>({
+      text,
+      correct:i===q.correct,
+      expNo:q.expNo,
+      expEn:q.expEn
+    })));
+
+    if(gameMode==="exam"){
+      $("translation").textContent=lang==="en"
+        ?q.no
+        :"Prøv å svare uten hjelp. / Try to answer without hints.";
+    }
+
+    if(gameMode==="scenario"){
+      $("modeTag").textContent="Hva ville du gjort?";
+    }
+  }
+
+  currentOptions=options;
+  const answers=$("answers");
+  answers.innerHTML="";
+
+  options.forEach((option,i)=>{
+    const button=document.createElement("button");
+    button.className="answer";
+    button.innerHTML=
+      `<span class="letter">${String.fromCharCode(65+i)}</span><span>${escapeHtml(option.text)}</span>`;
+    button.onclick=()=>chooseAnswer(i);
+    answers.appendChild(button);
+  });
+}
+
+function chooseAnswer(selectedIndex){
+  if(answered)return;
+  answered=true;
+
+  const selected=currentOptions[selectedIndex];
+  const right=selected.correct;
+
+  document.querySelectorAll(".answer").forEach((button,i)=>{
+    button.disabled=true;
+    if(currentOptions[i].correct)button.classList.add("correct");
+    if(i===selectedIndex&&!right)button.classList.add("wrong");
+  });
+
+  const feedback=$("feedback");
+  feedback.className="feedback "+(right?"good":"bad");
+
+  if(right){
+    score+=10;
+    correctCount++;
+    streak++;
+    bestStreak=Math.max(bestStreak,streak);
+
+    feedback.innerHTML=
+      `<strong>✅ ${lang==="en"?"Correct! +10 points":"Riktig! +10 poeng"}</strong>
+      ${escapeHtml(selected.expNo)}
+      <br><span>${escapeHtml(selected.expEn)}</span>`;
+  }else{
+    streak=0;
+    const correctAnswer=currentOptions.find(o=>o.correct).text;
+
+    feedback.innerHTML=
+      `<strong>💡 ${lang==="en"?"Not quite — keep going!":"Ikke helt — prøv igjen neste gang!"}</strong>
+      ${lang==="en"?"Correct answer: ":"Riktig svar: "}${escapeHtml(correctAnswer)}
+      <br>${escapeHtml(selected.expNo)}
+      <br><span>${escapeHtml(selected.expEn)}</span>`;
+  }
+
+  $("score").textContent=score;
+  $("streak").textContent=streak+" 🔥";
+  $("bar").style.width=((index+1)/deck.length*100)+"%";
+  $("next").disabled=false;
+  feedback.scrollIntoView({behavior:"smooth",block:"nearest"});
+}
+
+function nextQuestion(){
+  if(!answered)return;
+  index++;
+  renderQuestion();
+}
+
+function finishGame(quit){
+  show("result");
+
+  const total=deck.length;
+  const percentage=total?Math.round(correctCount/total*100):0;
+
+  $("finalScore").textContent=percentage+"%";
+  $("resultTitle").textContent=quit
+    ?"God innsats! / Good effort!"
+    :percentage>=85
+      ?"Fantastisk! / Fantastic! 🎉"
+      :percentage>=60
+        ?"Bra jobbet! / Well done! 🌟"
+        :"God øving! / Good practice! 💙";
+
+  $("resultText").textContent=quit
+    ?"Du kan øve igjen når du vil. / You can practise again whenever you like."
+    :`Du svarte på ${total} spørsmål. / You completed ${total} questions.`;
+
+  $("finalDetail").textContent=
+    `${correctCount} riktige · ${total} spørsmål · ${score} poeng · Beste streak: ${bestStreak} 🔥`;
+
+  $("finalMessage").textContent=percentage>=85
+    ?"Du har virkelig fått taket på stoffet! / You really know your stuff!"
+    :percentage>=60
+      ?"Du er på god vei. Les forklaringene og prøv igjen! / You are making progress. Review the explanations and try again!"
+      :"Hver runde er øving. Gå gjennom kategoriene og prøv igjen — du klarer dette! / Every round is practice. Review the topics and try again!";
+
+  $("bar").style.width="100%";
+}
+</script>
+</body>
+</html>
